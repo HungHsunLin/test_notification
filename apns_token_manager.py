@@ -2,17 +2,17 @@ import jwt
 import datetime
 
 # 設定p8憑證的路徑、Key ID、Team ID和App Bundle ID
-p8_file = 'path/APNsAuthKey_XXXXXXXXXX.p8'
+private_key_file = '/Users/tony760815/Desktop/test_notification/private_key.pem'
 key_id = 'ABCD1234EF'
 team_id = 'ABCDEFGHIJ'
 
 
 def generate_token():
     # 讀取p8憑證的內容
-    with open(p8_file, 'r') as f:
+    with open(private_key_file, 'r') as f:
         private_key = f.read()
 
-    # 設定JWT的header，包含alg（演算法）和kid（Key ID）
+    # 設定JWT的header，包含alg（演算ß法）和kid（Key ID）
     headers = {
         'alg': 'ES256',
         'kid': key_id,
@@ -36,4 +36,4 @@ def generate_token():
     return token
 
 
-print(generate_token)
+print(generate_token())
