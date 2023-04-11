@@ -1,4 +1,4 @@
-import http.client
+import requests
 import ssl
 import json
 import apns_token_manager
@@ -9,9 +9,10 @@ def generate_send_notification_connection():
     bundleID = 'com.notification.test'
     jwt_token = apns_token_manager.generate_token()
 
-    # 推播主機的URL
-    host = 'api.sandbox.push.apple.com'
     path = f'/3/device/DEVICE_TOKEN{device_token}'
+
+    # 推播主機的URL
+    url = f'https://api.sandbox.push.apple.com{path}'
 
     # 推播內容
     json_content = {
@@ -26,32 +27,18 @@ def generate_send_notification_connection():
     json_data = json.dumps(json_content).encode('utf-8')
 
     headers = {
-        'host': host,
         'apns-topic': bundleID,
         'authorization': f'bearer {jwt_token}',
         'apns-push-type': 'alert',
         'content-type': 'application/json'
     }
 
-    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-    context.minimum_version = ssl.TLSVersion.TLSv1_2  # 使用 TLS 1.2 或更高版本
-
     # 創建HTTP/2連接
-    conn = http.client.HTTPSConnection(
-        host,
-        context=context
-    )
-
-    # 設定HTTP/2.0的協定
-    conn._http_vsn = 2
-    conn._http_vsn_str = 'HTTP/2.0'
-
-    # 發送推播
-    conn.request(
-        'POST',
-        path,
+    conn = requests.post(
+        url,
         headers=headers,
-        body=json_data)
+        data=json_data
+    )
 
     return conn
 
