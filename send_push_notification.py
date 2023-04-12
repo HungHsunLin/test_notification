@@ -1,15 +1,13 @@
-import requests
-import ssl
-import json
+import httpx
 import apns_token_manager
 
 
 def generate_send_notification_connection():
     device_token = '00fc13adff785122b4ad28809a3420982341241421348097878e577c991de8f0'
-    bundleID = 'com.notification.test'
+    bundleID = 'com.test.push_notification'
     jwt_token = apns_token_manager.generate_token()
 
-    path = f'/3/device/DEVICE_TOKEN{device_token}'
+    path = f'/3/device/{device_token}'
 
     # 推播主機的URL
     url = f'https://api.sandbox.push.apple.com{path}'
@@ -24,34 +22,29 @@ def generate_send_notification_connection():
             }
         }
     }
-    json_data = json.dumps(json_content).encode('utf-8')
 
     headers = {
         'apns-topic': bundleID,
-        'authorization': f'bearer {jwt_token}',
+        'authorization': f'Bearer {jwt_token}',
         'apns-push-type': 'alert',
         'content-type': 'application/json'
     }
 
-    # 創建HTTP/2連接
-    conn = requests.post(
-        url,
-        headers=headers,
-        data=json_data
-    )
+    # 建立HTTP/2.0連線
+    client = httpx.Client(http2=True)
+    response = client.post(url, headers=headers, json=json_content)
 
-    return conn
+    # 關閉HTTP/2連接
+    client.close()
+
+    return response
 
 
 connection = generate_send_notification_connection()
 
 # 獲取推播結果
-response = connection.getresponse()
 
-if response.status == 200:
+if connection.status_code == 200:
     print('推播成功')
 else:
     print('推播失敗')
-
-# 關閉HTTP/2連接
-connection.close()
